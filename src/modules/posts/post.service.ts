@@ -9,3 +9,8 @@ export const CreatePostService = async (
   });
   return result;
 };
+
+const GetsPostService = async () => {
+  const result = await prisma.post.findMany();
+  return result;
+};
