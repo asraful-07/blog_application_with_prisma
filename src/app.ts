@@ -1,15 +1,21 @@
-import express, { Application, Request, Response } from "express";
+import express, { Application } from "express";
 import postRoutes from "./modules/posts/post.routes";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./lib/auth";
+import cors from "cors";
 
 const app: Application = express();
-// app.use(cors());
+app.use(
+  cors({
+    origin: process.env.APP_URL || "http://localhost:4000",
+    credentials: true,
+  })
+);
 app.use(express.json());
+
+app.all("/api/auth/*splat", toNodeHandler(auth));
 
 //* Routes
 app.use("/api", postRoutes);
-
-app.get("/", (req: Request, res: Response) => {
-  res.status(200).json({ success: true, message: "Server running" });
-});
 
 export default app;
