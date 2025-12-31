@@ -3,6 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 import nodemailer from "nodemailer";
 
+//* Gmail / Nodemailer sent to email
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
@@ -13,11 +14,14 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+//TODO Database connection (Prisma)
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  //* frontend URL
   trustedOrigins: [process.env.APP_URL!],
+  //* Custom User Fields
   user: {
     additionalFields: {
       role: {
@@ -36,11 +40,13 @@ export const auth = betterAuth({
       },
     },
   },
+  //* custom auth
   emailAndPassword: {
     enabled: true,
     autoSignIn: false,
     requireEmailVerification: true,
   },
+  //* Email Verification sent to email
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
@@ -190,6 +196,7 @@ export const auth = betterAuth({
       }
     },
   },
+  //* google auth
   socialProviders: {
     google: {
       prompt: "select_account consent",
