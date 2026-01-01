@@ -9,11 +9,21 @@ import {
 
 export const CreatePostController = async (req: Request, res: Response) => {
   try {
-    const post = await CreatePostService(req.body);
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const post = await CreatePostService({
+      ...req.body,
+      authorId: req.user.id,
+    });
 
     res.status(201).json({
       success: true,
-      massage: "Post created successfully",
+      message: "Post created successfully",
       data: post,
     });
   } catch (err: any) {
@@ -23,13 +33,10 @@ export const CreatePostController = async (req: Request, res: Response) => {
 
 export const GetsPostController = async (req: Request, res: Response) => {
   try {
-    const posts = await GetsPostService();
+    const { search } = req.query;
 
-    if (!posts) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Post not found" });
-    }
+    const searchString = typeof search === "string" ? search : undefined;
+    const posts = await GetsPostService({ search: searchString });
 
     res.status(200).json({
       success: true,

@@ -6,10 +6,11 @@ import {
   GetsPostController,
   UpdatePostController,
 } from "./post.controller";
+import auth, { UserRole } from "../../middleware/auth";
 
 const router = express.Router();
 
-router.post("/post", CreatePostController);
+router.post("/post", auth(UserRole.USER, UserRole.ADMIN), CreatePostController);
 router.get("/posts", GetsPostController);
 router.get("/post/:id", GetPostController);
 router.put("/post/:id", UpdatePostController);
