@@ -1,4 +1,5 @@
-import { Post } from "../../generated/prisma/client";
+import { Post, PostStatus } from "../../generated/prisma/client";
+import { PostWhereInput } from "../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
 
 export const CreatePostService = async (
@@ -10,31 +11,72 @@ export const CreatePostService = async (
   return result;
 };
 
-export const GetsPostService = async (payload: {
-  search?: string | undefined;
+export const GetsPostService = async ({
+  search,
+  tags,
+  isFeatured,
+  status,
+  authorId,
+}: {
+  search: string | undefined;
+  tags: string[] | [];
+  isFeatured: boolean | undefined;
+  status: PostStatus | undefined;
+  authorId: string | undefined;
 }) => {
-  const result = await prisma.post.findMany({
-    where: {
+  const addCondition: PostWhereInput[] = [];
+
+  //* search query
+  if (search) {
+    addCondition.push({
       OR: [
         {
           title: {
-            contains: payload.search as string,
+            contains: search as string,
             mode: "insensitive",
           },
         },
         {
           content: {
-            contains: payload.search as string,
+            contains: search as string,
             mode: "insensitive",
           },
         },
         {
           tags: {
-            has: payload.search as string,
+            has: search as string,
           },
         },
       ],
-    },
+    });
+  }
+
+  //* multiple tags search
+  if (tags?.length > 0) {
+    addCondition.push({
+      tags: {
+        hasEvery: tags as string[],
+      },
+    });
+  }
+
+  //* true or false
+  if (typeof isFeatured === "boolean") {
+    addCondition.push({ isFeatured });
+  }
+
+  //* enum value
+  if (status) {
+    addCondition.push({ status });
+  }
+
+  //* authorId
+  if (authorId) {
+    addCondition.push({ authorId });
+  }
+
+  const result = await prisma.post.findMany({
+    where: { AND: addCondition },
   });
   return result;
 };
