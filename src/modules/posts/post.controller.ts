@@ -6,6 +6,7 @@ import {
   GetsPostService,
   UpdatePostService,
 } from "./post.service";
+import { PostStatus } from "../../generated/prisma/enums";
 
 export const CreatePostController = async (req: Request, res: Response) => {
   try {
@@ -36,8 +37,33 @@ export const GetsPostController = async (req: Request, res: Response) => {
     const { search } = req.query;
 
     const searchString = typeof search === "string" ? search : undefined;
-    const posts = await GetsPostService({ search: searchString });
 
+    //* multiple tags search
+    const tags = req.query.tags ? (req.query.tags as string).split(",") : [];
+
+    //* true or false
+    //? const isFeatured = req.query.isFeatured ? req.query.isFeatured === "true" : undefined;
+    const isFeatured = req.query.isFeatured
+      ? req.query.isFeatured === "true"
+        ? true
+        : req.query.isFeatured === "false"
+          ? false
+          : undefined
+      : undefined;
+
+    //* enum value
+    const status = req.query.status as PostStatus | undefined;
+
+    //* authorId
+    const authorId = req.query.authorId as string | undefined;
+
+    const posts = await GetsPostService({
+      search: searchString,
+      tags,
+      isFeatured,
+      status,
+      authorId,
+    });
     res.status(200).json({
       success: true,
       message: "Posts fetched successfully",
