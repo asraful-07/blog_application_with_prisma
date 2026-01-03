@@ -17,12 +17,22 @@ export const GetsPostService = async ({
   isFeatured,
   status,
   authorId,
+  page,
+  limit,
+  skip,
+  sortBy,
+  sortOrder,
 }: {
   search: string | undefined;
   tags: string[] | [];
   isFeatured: boolean | undefined;
   status: PostStatus | undefined;
   authorId: string | undefined;
+  page: number;
+  limit: number;
+  skip: number;
+  sortBy: string | undefined;
+  sortOrder: string | undefined;
 }) => {
   const addCondition: PostWhereInput[] = [];
 
@@ -75,8 +85,12 @@ export const GetsPostService = async ({
     addCondition.push({ authorId });
   }
 
+  //* pagination
+
   const result = await prisma.post.findMany({
     where: { AND: addCondition },
+    take: limit,
+    skip,
   });
   return result;
 };
