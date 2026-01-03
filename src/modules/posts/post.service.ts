@@ -31,8 +31,8 @@ export const GetsPostService = async ({
   page: number;
   limit: number;
   skip: number;
-  sortBy: string | undefined;
-  sortOrder: string | undefined;
+  sortBy: string;
+  sortOrder: string;
 }) => {
   const addCondition: PostWhereInput[] = [];
 
@@ -85,21 +85,49 @@ export const GetsPostService = async ({
     addCondition.push({ authorId });
   }
 
-  //* pagination
-
   const result = await prisma.post.findMany({
     where: { AND: addCondition },
     take: limit,
     skip,
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
   });
-  return result;
+
+  //* pagination
+  const total = await prisma.post.count({
+    where: { AND: addCondition },
+  });
+
+  return {
+    data: result,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 };
 
 export const GetPostService = async (id: string) => {
-  const result = await prisma.post.findUnique({
-    where: { id },
+  return await prisma.$transaction(async (tx) => {
+    await tx.post.update({
+      where: {
+        id: id,
+      },
+      data: {
+        views: {
+          increment: 1,
+        },
+      },
+    });
+
+    const result = await tx.post.findUnique({
+      where: { id },
+    });
+    return result;
   });
-  return result;
 };
 
 //? type UpdatePostInput = {

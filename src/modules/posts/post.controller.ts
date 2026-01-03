@@ -7,6 +7,7 @@ import {
   UpdatePostService,
 } from "./post.service";
 import { PostStatus } from "../../generated/prisma/enums";
+import { paginationSorting } from "../../helper/paginationSorting";
 
 export const CreatePostController = async (req: Request, res: Response) => {
   try {
@@ -57,14 +58,10 @@ export const GetsPostController = async (req: Request, res: Response) => {
     //* authorId
     const authorId = req.query.authorId as string | undefined;
 
-    //* pagination
-    const page = Number(req.query.page ?? 1);
-    const limit = Number(req.query.limit ?? 10);
-    const skip = (page - 1) * limit;
-
-    //* sorting ace and desc
-    const sortBy = req.query.sortBy as string | undefined;
-    const sortOrder = req.query.sortOrder as string | undefined;
+    //* pagination and sorting desc
+    const { page, limit, skip, sortBy, sortOrder } = paginationSorting(
+      req.query
+    );
 
     const posts = await GetsPostService({
       search: searchString,
@@ -92,11 +89,11 @@ export const GetPostController = async (req: Request, res: Response) => {
   try {
     const post = await GetPostService(req.params.id as string);
 
-    if (!post) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Post not found" });
-    }
+    // if (!post) {
+    //   return res
+    //     .status(404)
+    //     .json({ success: false, message: "Post not found" });
+    // }
 
     res.status(200).json({ success: true, data: post });
   } catch (err: any) {
