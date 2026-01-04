@@ -131,13 +131,13 @@ export const GetPostService = async (id: string) => {
 };
 
 //? type UpdatePostInput = {
-//   title?: string;
-//   content?: string;
-//   thumbnail?: string;
-//   isFeatured?: boolean;
-//   status?: PostStatus;
-//   tags?: string[];
-// };
+//?   title?: string;
+//?   content?: string;
+//?   thumbnail?: string;
+//?   isFeatured?: boolean;
+//?   status?: PostStatus;
+//?   tags?: string[];
+//? };
 //? export const UpdatePostService = async (id: string, data: UpdatePostInput)
 
 export const UpdatePostService = async (
