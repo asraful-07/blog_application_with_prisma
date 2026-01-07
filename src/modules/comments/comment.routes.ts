@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  CommentUpdateController,
   CreateCommentController,
   DeleteCommentController,
   GetCommentByAuthorController,
@@ -28,6 +29,12 @@ router.patch(
   "/comment/:commentId",
   auth(UserRole.USER, UserRole.ADMIN),
   UpdateCommentController
+);
+
+router.patch(
+  "/comment-update/:commentId",
+  auth(UserRole.USER, UserRole.ADMIN),
+  CommentUpdateController
 );
 
 export default router;

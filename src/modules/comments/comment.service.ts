@@ -120,3 +120,30 @@ export const UpdateCommentService = async (
 
   return result;
 };
+
+export const CommentUpdateService = async (
+  id: string,
+  data: { status: CommentStatus }
+) => {
+  const commentData = await prisma.comment.findUniqueOrThrow({
+    where: {
+      id: id,
+    },
+    select: {
+      id: true,
+      status: true,
+    },
+  });
+
+  if (commentData.status === data.status) {
+    throw new Error(`Already (${data.status})`);
+  }
+
+  const result = await prisma.comment.update({
+    where: {
+      id: id,
+    },
+    data,
+  });
+  return result;
+};
