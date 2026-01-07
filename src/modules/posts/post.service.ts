@@ -1,3 +1,4 @@
+import { promise } from "better-auth/*";
 import { CommentStatus, Post, PostStatus } from "../../generated/prisma/client";
 import { PostWhereInput } from "../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
@@ -164,31 +165,145 @@ export const GetPostService = async (id: string) => {
   });
 };
 
-//? type UpdatePostInput = {
-//?   title?: string;
-//?   content?: string;
-//?   thumbnail?: string;
-//?   isFeatured?: boolean;
-//?   status?: PostStatus;
-//?   tags?: string[];
-//? };
-//? export const UpdatePostService = async (id: string, data: UpdatePostInput)
+export const MyPostService = async (authorId: string) => {
+  return await prisma.$transaction(async (tx) => {
+    await tx.user.findUniqueOrThrow({
+      where: {
+        id: authorId,
+        status: "ACTIVE",
+      },
+      select: {
+        id: true,
+      },
+    });
+    const result = await tx.post.findMany({
+      where: {
+        authorId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        _count: {
+          select: {
+            comments: true,
+          },
+        },
+      },
+    });
 
-export const UpdatePostService = async (
-  id: string,
-  data: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>
-) => {
-  const result = await prisma.post.update({
-    where: { id },
-    data,
+    return result;
   });
-
-  return result;
 };
 
-export const DeletePostService = async (id: string) => {
-  const result = await prisma.post.delete({
-    where: { id },
+export const UpdatePostService = async (
+  postId: string,
+  data: Partial<Post>,
+  authorId: string,
+  isAdmin: boolean
+) => {
+  return await prisma.$transaction(async (tx) => {
+    const postData = await tx.post.findUniqueOrThrow({
+      where: {
+        id: postId,
+      },
+      select: {
+        id: true,
+        authorId: true,
+      },
+    });
+
+    if (!isAdmin && postData.authorId !== authorId) {
+      throw new Error("You are not the owner/creator of the post!");
+    }
+
+    if (!isAdmin) {
+      delete data.isFeatured;
+    }
+
+    const result = await tx.post.update({
+      where: {
+        id: postData.id,
+      },
+      data,
+    });
+
+    return result;
   });
-  return result;
+};
+
+export const DeletePostService = async (
+  postId: string,
+  authorId: string,
+  isAdmin: boolean
+) => {
+  return await prisma.$transaction(async (tx) => {
+    const postData = await tx.post.findUniqueOrThrow({
+      where: {
+        id: postId,
+      },
+      select: {
+        id: true,
+        authorId: true,
+      },
+    });
+
+    if (!isAdmin && postData.authorId !== authorId) {
+      throw new Error("your not real user");
+    }
+
+    const result = await tx.post.delete({
+      where: { id: postId },
+    });
+    return result;
+  });
+};
+
+// totalPosts, publishedPosts, draftPosts, archivedPosts, totalComments,
+//  approvedComment, totalUsers, adminCount, userCount, totalViews
+
+export const StatsService = async () => {
+  return await prisma.$transaction(async (tx) => {
+    const [
+      totalPosts,
+      publishedPosts,
+      draftPosts,
+      archivedPosts,
+      totalComments,
+      approvedComments,
+      rejectedComments,
+      totalUsers,
+      adminCount,
+      userCount,
+      postViewsAgg,
+    ] = await Promise.all([
+      tx.post.count(),
+      tx.post.count({ where: { status: PostStatus.PUBLISHED } }),
+      tx.post.count({ where: { status: PostStatus.DRAFT } }),
+      tx.post.count({ where: { status: PostStatus.ARCHIVED } }),
+      tx.comment.count(),
+      tx.comment.count({ where: { status: CommentStatus.APPROVED } }),
+      tx.comment.count({ where: { status: CommentStatus.REJECT } }),
+      tx.user.count(),
+      tx.user.count({ where: { role: "ADMIN" } }),
+      tx.user.count({ where: { role: "USER" } }),
+      tx.post.aggregate({ _sum: { views: true } }),
+    ]);
+
+    const totalViews = postViewsAgg._sum.views || 0;
+
+    return {
+      totalPosts,
+      publishedPosts,
+      draftPosts,
+      archivedPosts,
+      totalComments,
+      approvedComments,
+      rejectedComments,
+      totalUsers,
+      adminCount,
+      userCount,
+      totalViews,
+    };
+  });
 };

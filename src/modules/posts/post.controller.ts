@@ -4,10 +4,13 @@ import {
   DeletePostService,
   GetPostService,
   GetsPostService,
+  MyPostService,
+  StatsService,
   UpdatePostService,
 } from "./post.service";
 import { PostStatus } from "../../generated/prisma/enums";
 import { paginationSorting } from "../../helper/paginationSorting";
+import { UserRole } from "../../middleware/auth";
 
 export const CreatePostController = async (req: Request, res: Response) => {
   try {
@@ -89,11 +92,23 @@ export const GetPostController = async (req: Request, res: Response) => {
   try {
     const post = await GetPostService(req.params.id as string);
 
-    // if (!post) {
-    //   return res
-    //     .status(404)
-    //     .json({ success: false, message: "Post not found" });
-    // }
+    res.status(200).json({ success: true, data: post });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const MyPostController = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Unauthorized user" });
+    }
+
+    const post = await MyPostService(user?.id);
 
     res.status(200).json({ success: true, data: post });
   } catch (err: any) {
@@ -103,16 +118,20 @@ export const GetPostController = async (req: Request, res: Response) => {
 
 export const UpdatePostController = async (req: Request, res: Response) => {
   try {
+    const user = req.user;
+    const isAdmin = user?.role === UserRole.ADMIN;
+    if (!user) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Unauthorized user" });
+    }
+
     const updatedPost = await UpdatePostService(
       req.params.id as string,
-      req.body
+      req.body,
+      user.id,
+      isAdmin
     );
-
-    if (!updatedPost) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Post not found" });
-    }
 
     res.status(200).json({
       success: true,
@@ -126,18 +145,37 @@ export const UpdatePostController = async (req: Request, res: Response) => {
 
 export const DeletePostController = async (req: Request, res: Response) => {
   try {
-    const post = await DeletePostService(req.params.id as string);
+    const user = req.user;
 
-    if (!post) {
+    const isAdmin = user?.role === UserRole.ADMIN;
+
+    if (!user) {
       return res
-        .status(404)
-        .json({ success: false, message: "Post not found" });
+        .status(401)
+        .json({ success: false, message: "Unauthorized user" });
     }
+
+    const post = await DeletePostService(
+      req.params.id as string,
+      user?.id,
+      isAdmin
+    );
 
     res.status(200).json({
       success: true,
       message: "Post deleted successfully",
+      data: post,
     });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const StatsController = async (req: Request, res: Response) => {
+  try {
+    const stats = await StatsService();
+
+    res.status(200).json({ success: true, message: "All data", data: stats });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
   }
