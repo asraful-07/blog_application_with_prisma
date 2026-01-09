@@ -19,4 +19,7 @@ app.all("/api/auth/*splat", toNodeHandler(auth));
 app.use("/api", postRoutes);
 app.use("/api", commentRoutes);
 
+// app.use(notFound)
+// app.use(errorHandler)
+
 export default app;
