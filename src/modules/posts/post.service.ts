@@ -1,4 +1,3 @@
-import { promise } from "better-auth/*";
 import { CommentStatus, Post, PostStatus } from "../../generated/prisma/client";
 import { PostWhereInput } from "../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
@@ -258,9 +257,6 @@ export const DeletePostService = async (
     return result;
   });
 };
-
-// totalPosts, publishedPosts, draftPosts, archivedPosts, totalComments,
-//  approvedComment, totalUsers, adminCount, userCount, totalViews
 
 export const StatsService = async () => {
   return await prisma.$transaction(async (tx) => {
