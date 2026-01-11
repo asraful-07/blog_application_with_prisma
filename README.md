@@ -73,19 +73,6 @@ src/
 
 ---
 
-## ⚙️ Environment Variables
-
-`.env`
-
-```
-DATABASE_URL=postgresql://user:password@localhost:5432/blog_db
-BETTER_AUTH_SECRET=your_secret_key
-BETTER_AUTH_URL=http://localhost:5000
-PORT=5000
-```
-
----
-
 ## 📦 Installation & Setup
 
 ```bash
