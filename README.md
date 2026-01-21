@@ -47,32 +47,6 @@
 
 ---
 
-## 📁 Project Structure
-
-```
-src/
-│── modules/
-│   ├── auth/
-│   ├── post/
-│   ├── comment/
-│   ├── stats/
-│
-│── middlewares/
-│   ├── auth.ts
-│
-│── lib/
-│   ├── prisma.ts
-│   ├── auth.ts
-│
-│── routes/
-│   ├── index.ts
-│
-│── app.ts
-│── server.ts
-```
-
----
-
 ## 📦 Installation & Setup
 
 ```bash
