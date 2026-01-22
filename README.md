@@ -115,20 +115,6 @@ Authorization: Bearer <token>
 
 ---
 
-## 🧠 Prisma Schema (Sample)
-
-```prisma
-model Post {
-  id        String   @id @default(uuid())
-  title     String
-  content   String
-  status    PostStatus
-  views     Int      @default(0)
-  comments  Comment[]
-  createdAt DateTime @default(now())
-}
-```
-
 ---
 
 ## 🛡 Security Best Practices
