@@ -47,45 +47,6 @@
 
 ---
 
-## 📁 Project Structure
-
-```
-src/
-│── modules/
-│   ├── auth/
-│   ├── post/
-│   ├── comment/
-│   ├── stats/
-│
-│── middlewares/
-│   ├── auth.ts
-│
-│── lib/
-│   ├── prisma.ts
-│   ├── auth.ts
-│
-│── routes/
-│   ├── index.ts
-│
-│── app.ts
-│── server.ts
-```
-
----
-
-## ⚙️ Environment Variables
-
-`.env`
-
-```
-DATABASE_URL=postgresql://user:password@localhost:5432/blog_db
-BETTER_AUTH_SECRET=your_secret_key
-BETTER_AUTH_URL=http://localhost:5000
-PORT=5000
-```
-
----
-
 ## 📦 Installation & Setup
 
 ```bash
@@ -153,20 +114,6 @@ Authorization: Bearer <token>
 | GET    | /api/stats |
 
 ---
-
-## 🧠 Prisma Schema (Sample)
-
-```prisma
-model Post {
-  id        String   @id @default(uuid())
-  title     String
-  content   String
-  status    PostStatus
-  views     Int      @default(0)
-  comments  Comment[]
-  createdAt DateTime @default(now())
-}
-```
 
 ---
 
